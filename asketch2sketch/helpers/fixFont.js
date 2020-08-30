@@ -1,7 +1,7 @@
 // taken from https://github.com/airbnb/react-sketchapp/blob/master/src/jsonUtils/hacksForJSONImpl.js
 import {generateID, makeColorFromCSS} from './utils';
 import {TextAlignment} from 'sketch-constants';
-import {toSJSON} from 'sketchapp-json-plugin';
+import {toSJSON} from '@mtfe/sketchapp-json-plugin';
 import findFont from './findFont';
 import getSketchVersion from './getSketchVersion';
 
@@ -163,10 +163,16 @@ function makeTextStyle(textStyle) {
 }
 
 export function fixTextLayer(layer) {
-  layer.attributedString =
+  // 原生Sketch文件json导入时 layer.attributedString 有值，此时 layer.style 包含渲染信息不可删除
+  // 代码组件导入时需要将 layer.style 、layer.text删除，否则Skech会crash
+  const isNativeJson = !!layer.attributedString;
+
+  layer.attributedString = layer.attributedString ||
     makeEncodedAttributedString([{content: layer.text, textStyles: layer.style}]);
-  delete layer.style;
-  delete layer.text;
+  if (!isNativeJson) {
+    delete layer.style;
+    delete layer.text;
+  }
 }
 
 export function fixSharedTextStyle(sharedStyle) {

@@ -133,3 +133,7 @@ export const RESIZING_CONSTRAINTS = {
   HEIGHT: 47,
   NONE: 63
 };
+
+export const hasAnyDefined = (obj, names) => names.some(key => obj[key] !== undefined);
+
+export const OVERFLOW_STYLES = ['overflow', 'overflowX', 'overflowY'];

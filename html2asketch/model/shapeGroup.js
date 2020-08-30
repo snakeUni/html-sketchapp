@@ -14,6 +14,10 @@ class ShapeGroup extends Base {
     this._y = y;
   }
 
+  setRotation(rotation) {
+    this._rotation = rotation;
+  }
+
   toJSON() {
     const obj = super.toJSON();
 
@@ -28,6 +32,7 @@ class ShapeGroup extends Base {
 
     obj.hasClickThrough = false;
     obj.windingRule = 1;
+    obj.rotation = this._rotation;
 
     return obj;
   }

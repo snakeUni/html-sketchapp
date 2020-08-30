@@ -4,12 +4,14 @@
   ],
   "rules": {
     "no-console": 0,
-    "new-cap": 0
+    "new-cap": 0,
+    "max-len": 1
   },
   "env": {
     "jest": true
   },
   "globals": {
+    "NSDocumentController": false,
     "NSFont": false,
     "NSArray": false,
     "NSColor": false,
@@ -47,6 +49,7 @@
     "COSAlertWindow": false,
     "NSMakeRect": false,
     "NSBundle": false,
+    "MSPage": false,
     "MSSharedStyle": false,
     "MSLayerGroup": false,
     "NSPasteboard": false,

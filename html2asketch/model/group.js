@@ -10,6 +10,10 @@ class Group extends Base {
     this._height = height;
   }
 
+  setRotation(rotation) {
+    this._rotation = rotation;
+  }
+
   toJSON() {
     const obj = super.toJSON();
 
@@ -26,6 +30,7 @@ class Group extends Base {
     obj.clippingMaskMode = 0;
     obj.hasClippingMask = false;
     obj.windingRule = 1;
+    obj.rotation = this._rotation;
 
     return obj;
   }

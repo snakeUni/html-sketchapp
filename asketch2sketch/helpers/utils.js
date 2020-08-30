@@ -65,3 +65,22 @@ export function replaceProperties(dest, src) {
     }
   }
 }
+
+export const isNativeDocument = container => container && typeof container.pages === 'function';
+
+export const isNativeSymbolsPage = layer => layer instanceof MSPage && String(layer.name()) === 'Symbols';
+
+export const getDocumentDataFromContext = ctx =>
+  (
+    ctx.document ||
+    (ctx.actionContext || {}).document ||
+    NSDocumentController.sharedDocumentController().currentDocument()
+  ).documentData();
+
+export const getDocumentDataFromContainer = container => {
+  if (!container) {
+    return getDocumentDataFromContext(context);
+  }
+
+  return container.documentData();
+};

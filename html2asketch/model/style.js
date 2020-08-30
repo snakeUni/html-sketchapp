@@ -104,6 +104,10 @@ class Style {
     this._opacity = opacity;
   }
 
+  addTransform(transform) {
+    this._transform = transform;
+  }
+
   toJSON() {
     return {
       _class: 'style',
@@ -118,7 +122,8 @@ class Style {
         _class: 'graphicsContextSettings',
         blendMode: 0,
         opacity: this._opacity
-      }
+      },
+      ...this._transform
     };
   }
 }

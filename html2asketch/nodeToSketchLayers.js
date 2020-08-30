@@ -1,3 +1,4 @@
+/* eslint padding-line-between-statements: 0 */
 import Rectangle from './model/rectangle';
 import Bitmap from './model/bitmap';
 import SVG from './model/svg';
@@ -13,12 +14,15 @@ import {getSVGString} from './helpers/svg';
 import {getGroupBCR} from './helpers/bcr';
 import {fixWhiteSpace} from './helpers/text';
 import {isNodeVisible, isTextVisible} from './helpers/visibility';
+// import processTransform from './helpers/processTransform';
+import {hasAnyDefined, OVERFLOW_STYLES} from './helpers/utils';
 
 const DEFAULT_VALUES = {
   backgroundColor: 'rgba(0, 0, 0, 0)',
   backgroundImage: 'none',
   borderWidth: '0px',
-  boxShadow: 'none'
+  boxShadow: 'none',
+  transform: 'none'
 };
 
 function hasOnlyDefaultStyles(styles) {
@@ -114,12 +118,26 @@ export default function nodeToSketchLayers(node, options) {
     return layers;
   }
 
-  const shapeGroup = new ShapeGroup({x: left, y: top, width, height});
+  const shapeGroup = new ShapeGroup({x: left, y: top, width: styles.width, height: styles.height});
 
   if (options && options.getRectangleName) {
     shapeGroup.setName(options.getRectangleName(node));
   } else {
     shapeGroup.setName(createXPathFromElement(node));
+  }
+
+  // overflow set hasClippingMask = true
+  if (hasAnyDefined(styles, OVERFLOW_STYLES)) {
+    if (
+      styles.overflow === 'hidden' ||
+      styles.overflow === 'scroll' ||
+      styles.overflowX === 'hidden' ||
+      styles.overflowX === 'scroll' ||
+      styles.overflowY === 'hidden' ||
+      styles.overflowY === 'scroll'
+    ) {
+      shapeGroup.setHasClippingMask(true);
+    }
   }
 
   const isImage = node.nodeName === 'IMG' && node.currentSrc;
@@ -128,6 +146,16 @@ export default function nodeToSketchLayers(node, options) {
   // if layer has no background/shadow/border/etc. skip it
   if (isImage || !hasOnlyDefaultStyles(styles)) {
     const style = new Style();
+
+    // if (styles.transform !== DEFAULT_VALUES.transform) {
+    //   const transform = processTransform({width, height, top, left, right: bcr.right, bottom: bcr.bottom}, styles);
+    //   style.addTransform(transform);
+
+    //   // rotation is shapeGroup's property, not sytle
+    //   if (transform.rotation) {
+    //     shapeGroup.setRotation(transform.rotation);
+    //   }
+    // }
 
     if (backgroundColor) {
       style.addColorFill(backgroundColor);
@@ -158,7 +186,12 @@ export default function nodeToSketchLayers(node, options) {
     }
 
     // support for one-side borders (using inner shadow because Sketch doesn't support that)
-    if (borderWidth.indexOf(' ') === -1) {
+    const colorMap = {};
+    colorMap[borderTopColor] = true;
+    colorMap[borderRightColor] = true;
+    colorMap[borderBottomColor] = true;
+    colorMap[borderLeftColor] = true;
+    if (borderWidth.indexOf(' ') === -1 && Object.keys(colorMap).length === 1) {
       style.addBorder({color: borderColor, thickness: parseFloat(borderWidth)});
     } else {
       const borderTopWidthFloat = parseFloat(borderTopWidth);
@@ -194,7 +227,7 @@ export default function nodeToSketchLayers(node, options) {
       bottomRight: fixBorderRadius(borderBottomRightRadius, width, height)
     };
 
-    const rectangle = new Rectangle({width, height, cornerRadius});
+    const rectangle = new Rectangle({width: styles.width, height: styles.height, cornerRadius});
 
     shapeGroup.addLayer(rectangle);
 
@@ -300,15 +333,15 @@ export default function nodeToSketchLayers(node, options) {
     skipSystemFonts: options && options.skipSystemFonts
   });
 
-  const rangeHelper = document.createRange();
-
   // Text
   Array.from(node.childNodes)
     .filter(child => child.nodeType === 3 && child.nodeValue.trim().length > 0)
     .forEach(textNode => {
+      const rangeHelper = document.createRange();
+
       rangeHelper.selectNodeContents(textNode);
       const textRanges = Array.from(rangeHelper.getClientRects());
-      const numberOfLines = textRanges.length;
+      const numberOfLines = Array.from(new Set(textRanges.map(item => item.top))).length;
       const textBCR = rangeHelper.getBoundingClientRect();
       const lineHeightInt = parseInt(lineHeight, 10);
       const textBCRHeight = textBCR.bottom - textBCR.top;
@@ -320,13 +353,21 @@ export default function nodeToSketchLayers(node, options) {
         fixY = (textBCRHeight - lineHeightInt * numberOfLines) / 2;
       }
 
+      // TODO hack, 如果是单行文本
+      if (numberOfLines === 1) {
+        const offsetFixY = textBCR.top - bcr.top - (bcr.bottom - textBCR.bottom);
+        if (Math.abs(offsetFixY) === 1) {
+          fixY -= offsetFixY / 2;
+        }
+      }
+
       const textValue = fixWhiteSpace(textNode.nodeValue, whiteSpace);
 
       const text = new Text({
         x: textBCR.left,
         y: textBCR.top + fixY,
         width: textBCR.right - textBCR.left,
-        height: textBCRHeight,
+        height: numberOfLines === 1 ? lineHeightInt : textBCRHeight,
         text: textValue,
         style: textStyle,
         multiline: numberOfLines > 1
