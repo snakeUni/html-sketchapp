@@ -49,7 +49,7 @@ export const makeColorFromCSS = (input, alpha = 1) => {
     red: r / 255,
     green: g / 255,
     blue: b / 255,
-    alpha: a * alpha
+    alpha: a * alpha,
   };
 };
 
@@ -62,7 +62,7 @@ export const makeColorFill = (cssColor, alpha) => ({
   noiseIndex: 0,
   noiseIntensity: 0,
   patternFillType: 1,
-  patternTileScale: 1
+  patternTileScale: 1,
 });
 
 const ensureBase64DataURL = url => {
@@ -96,12 +96,12 @@ export const makeImageFill = (url, patternFillType = 1) => ({
     _class: 'MSJSONOriginalDataReference',
     _ref_class: 'MSImageData',
     _ref: `images/${generateID()}`,
-    url: url.indexOf('data:') === 0 ? ensureBase64DataURL(url) : url
+    url: url.indexOf('data:') === 0 ? ensureBase64DataURL(url) : url,
   },
   noiseIndex: 0,
   noiseIntensity: 0,
   patternFillType,
-  patternTileScale: 1
+  patternTileScale: 1,
 });
 
 const containsAllItems = (needles, haystack) => needles.every(needle => haystack.includes(needle));
@@ -131,7 +131,63 @@ export const RESIZING_CONSTRAINTS = {
   LEFT: 59,
   WIDTH: 61,
   HEIGHT: 47,
-  NONE: 63
+  NONE: 63,
+};
+
+export const SMART_LAYOUT = {
+  LEFT_TO_RIGHT: 'LEFT_TO_RIGHT',
+  HORIZONTALLY_CENTER: 'HORIZONTALLY_CENTER',
+  RIGHT_TO_LEFT: 'RIGHT_TO_LEFT',
+  TOP_TO_BOTTOM: 'TOP_TO_BOTTOM',
+  VERTICALLY_CENTER: 'VERTICALLY_CENTER',
+  BOTTOM_TO_TOP: 'BOTTOM_TO_TOP',
+};
+
+export const DEFAULT_GROUP_LAYOUT = {
+  _class: 'MSImmutableFreeformGroupLayout',
+};
+
+const smartLayoutBase = {
+  _class: 'MSImmutableInferredGroupLayout',
+};
+
+const HORIZONTAL_AXIS = {
+  axis: 0,
+};
+
+const VERTICAL_AXIS = {
+  axis: 1,
+};
+
+export const getGroupLayout = layoutType => {
+  switch (layoutType) {
+    case SMART_LAYOUT.LEFT_TO_RIGHT: {
+      return Object.assign({}, smartLayoutBase, HORIZONTAL_AXIS, {layoutAnchor: 0});
+    }
+
+    case SMART_LAYOUT.HORIZONTALLY_CENTER: {
+      return Object.assign({}, smartLayoutBase, HORIZONTAL_AXIS, {layoutAnchor: 1});
+    }
+
+    case SMART_LAYOUT.RIGHT_TO_LEFT: {
+      return Object.assign({}, smartLayoutBase, HORIZONTAL_AXIS, {layoutAnchor: 2});
+    }
+
+    case SMART_LAYOUT.TOP_TO_BOTTOM: {
+      return Object.assign({}, smartLayoutBase, VERTICAL_AXIS, {layoutAnchor: 0});
+    }
+
+    case SMART_LAYOUT.VERTICALLY_CENTER: {
+      return Object.assign({}, smartLayoutBase, VERTICAL_AXIS, {layoutAnchor: 1});
+    }
+
+    case SMART_LAYOUT.BOTTOM_TO_TOP: {
+      return Object.assign({}, smartLayoutBase, VERTICAL_AXIS, {layoutAnchor: 2});
+    }
+
+    default:
+      return DEFAULT_GROUP_LAYOUT;
+  }
 };
 
 export const hasAnyDefined = (obj, names) => names.some(key => obj[key] !== undefined);

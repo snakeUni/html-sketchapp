@@ -152,6 +152,16 @@ export default function nodeTreeToSketchGroup(node, options) {
         return zIndexA - zIndexB;
       })
       .filter(node => isNodeVisible(node))
+      // sort the children by computed z-index so that nodes with lower z-indexes are added
+      // to the group first, "beneath" those with higher z-indexes
+      .sort((a, b) => {
+        const computedA = getComputedStyle(a).zIndex,
+          computedB = getComputedStyle(b).zIndex,
+          zIndexA = isNaN(computedA) ? 0 : +computedA,
+          zIndexB = isNaN(computedB) ? 0 : +computedB;
+
+        return zIndexA - zIndexB;
+      })
       .forEach(childNode => {
         layers.push(nodeTreeToSketchGroup(childNode, options));
 

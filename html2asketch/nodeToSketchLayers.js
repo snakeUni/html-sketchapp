@@ -106,7 +106,7 @@ export default function nodeToSketchLayers(node, options) {
     display,
     boxShadow,
     opacity,
-    whiteSpace
+    whiteSpace,
   } = styles;
 
   // skip SVG child nodes as they are already covered by `new SVG(…)`
@@ -224,7 +224,7 @@ export default function nodeToSketchLayers(node, options) {
       topLeft: fixBorderRadius(borderTopLeftRadius, width, height),
       topRight: fixBorderRadius(borderTopRightRadius, width, height),
       bottomLeft: fixBorderRadius(borderBottomLeftRadius, width, height),
-      bottomRight: fixBorderRadius(borderBottomRightRadius, width, height)
+      bottomRight: fixBorderRadius(borderBottomRightRadius, width, height),
     };
 
     const rectangle = new Rectangle({width: styles.width, height: styles.height, cornerRadius});
@@ -267,7 +267,7 @@ export default function nodeToSketchLayers(node, options) {
               x: bitmapX,
               y: bitmapY,
               width: actualImgSize.width,
-              height: actualImgSize.height
+              height: actualImgSize.height,
             });
 
             bm.setName('background-image');
@@ -308,7 +308,7 @@ export default function nodeToSketchLayers(node, options) {
       y: childrenBCR.top,
       width: childrenBCR.width,
       height: childrenBCR.height,
-      rawSVGString: getSVGString(node)
+      rawSVGString: getSVGString(node),
     });
 
     layers.push(svgLayer);
@@ -323,14 +323,14 @@ export default function nodeToSketchLayers(node, options) {
   const textStyle = new TextStyle({
     fontFamily,
     fontSize: parseInt(fontSize, 10),
-    lineHeight: lineHeight !== 'normal' ? parseInt(lineHeight, 10) : undefined,
+    lineHeight: lineHeight !== 'normal' ? parseFloat(lineHeight) : undefined,
     letterSpacing: letterSpacing !== 'normal' ? parseFloat(letterSpacing) : undefined,
     fontWeight: parseFontWeight(fontWeight),
     color,
     textTransform,
     textDecoration: textDecorationLine,
     textAlign: display === 'flex' || display === 'inline-flex' ? justifyContent : textAlign,
-    skipSystemFonts: options && options.skipSystemFonts
+    skipSystemFonts: options && options.skipSystemFonts,
   });
 
   // Text
@@ -370,7 +370,7 @@ export default function nodeToSketchLayers(node, options) {
         height: numberOfLines === 1 ? lineHeightInt : textBCRHeight,
         text: textValue,
         style: textStyle,
-        multiline: numberOfLines > 1
+        multiline: numberOfLines > 1,
       });
 
       if (options && options.onTextGenerate) {

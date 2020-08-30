@@ -1,7 +1,8 @@
 /* eslint padding-line-between-statements: 0 */
 import UI from 'sketch/ui';
-import {fromSJSONDictionary, toSJSON} from '@mtfe/sketchapp-json-plugin';
+import {fromSJSONDictionary, toSJSON} from 'sketchapp-json-plugin';
 import {fixTextLayer, fixSharedTextStyle} from './helpers/fixFont';
+import {SharedStyle} from 'sketch/dom';
 import fixImageFillsInLayer from './helpers/fixImageFill';
 import fixBitmap from './helpers/fixBitmap';
 import fixSVGLayer from './helpers/fixSVG';
@@ -73,6 +74,9 @@ function getNativeLayer(failingLayers, layer) {
 function removeSharedTextStyles(document) {
   document.documentData().layerTextStyles().setObjects([]);
 }
+function removeSharedLayerStyles(document) {
+  document.documentData().layerStyles().setObjects([]);
+}
 
 function addSharedTextStyle(document, style) {
   const container = context.document.documentData().layerTextStyles();
@@ -90,6 +94,14 @@ function addSharedTextStyle(document, style) {
     }
     container.addSharedObject(sharedStyle);
   }
+}
+
+function addSharedLayerStyle(document, {name, style}) {
+  SharedStyle.fromStyle({
+    name,
+    style: fromSJSONDictionary(style),
+    document,
+  });
 }
 
 function removeSharedColors(document) {
@@ -250,13 +262,16 @@ export default function asketch2sketch(context, asketchFiles) {
   });
 
   if (asketchDocument) {
-    removeSharedColors(document);
-    removeSharedTextStyles(document);
+    if (options && options.removeSharedStyles) {
+      removeSharedColors(document);
+      removeSharedTextStyles(document);
+      removeSharedLayerStyles(document);
+    }
 
     if (asketchDocument.assets.colors) {
       asketchDocument.assets.colors.forEach(color => addSharedColor(document, color));
 
-      console.log('Shared colors added: ' + asketchDocument.assets.colors.length);
+      console.log(`Shared colors added: ${asketchDocument.assets.colors.length}`);
     }
 
     if (asketchDocument.layerTextStyles && asketchDocument.layerTextStyles.objects) {
@@ -265,7 +280,14 @@ export default function asketch2sketch(context, asketchFiles) {
         addSharedTextStyle(document, style);
       });
 
-      console.log('Shared text styles added: ' + asketchDocument.layerTextStyles.objects.length);
+      console.log(`Shared text styles added: ${asketchDocument.layerTextStyles.objects.length}`);
+    }
+    if (asketchDocument.layerStyles && asketchDocument.layerStyles.objects) {
+      asketchDocument.layerStyles.objects.forEach(sharedStyle => {
+        addSharedLayerStyle(document, sharedStyle);
+      });
+
+      console.log(`Shared layer styles added: ${asketchDocument.layerStyles.objects.length}`);
     }
   }
 

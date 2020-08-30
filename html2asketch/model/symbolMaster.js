@@ -1,6 +1,12 @@
-import {generateID} from '../helpers/utils';
+import {
+  generateID,
+  getGroupLayout,
+  SMART_LAYOUT,
+} from '../helpers/utils';
 import Base from './base';
 import SymbolInstance from './symbolInstance';
+
+export const SYMBOL_SMART_LAYOUT = SMART_LAYOUT;
 
 class SymbolMaster extends Base {
   constructor({x, y, width = null, height = null, id}) {
@@ -11,6 +17,7 @@ class SymbolMaster extends Base {
     this._width = width;
     this._height = height;
     this._symbolID = generateID();
+    this._groupLayout = getGroupLayout();
   }
 
   setId(id) {
@@ -57,6 +64,10 @@ class SymbolMaster extends Base {
     return {width, height};
   }
 
+  setGroupLayout(layoutType) {
+    this._groupLayout = getGroupLayout(layoutType);
+  }
+
   toJSON() {
     const obj = super.toJSON();
     const {width, height} = this.getSize();
@@ -67,26 +78,26 @@ class SymbolMaster extends Base {
       width,
       height,
       'x': this._x,
-      'y': this._y
+      'y': this._y,
     };
 
     obj.style = {
       '_class': 'style',
       'endDecorationType': 0,
       'miterLimit': 10,
-      'startDecorationType': 0
+      'startDecorationType': 0,
     };
 
     obj.horizontalRulerData = {
       '_class': 'rulerData',
       'base': 0,
-      'guides': []
+      'guides': [],
     };
 
     obj.verticalRulerData = {
       '_class': 'rulerData',
       'base': 0,
-      'guides': []
+      'guides': [],
     };
 
     obj.backgroundColor = {
@@ -94,7 +105,7 @@ class SymbolMaster extends Base {
       'alpha': 1,
       'blue': 1,
       'green': 1,
-      'red': 1
+      'red': 1,
     };
 
     obj.hasClickThrough = true;
@@ -105,6 +116,7 @@ class SymbolMaster extends Base {
     obj.includeBackgroundColorInInstance = false;
     obj.symbolID = this._symbolID;
     obj.changeIdentifier = 0;
+    obj.groupLayout = this._groupLayout;
 
     return obj;
   }
